@@ -7,12 +7,14 @@ import java.util.*;
 public class ParkingLot {
     private final int lotId;
     private final int numFloors;
-    final List<ParkingFloor> floors;
+    final Map<Integer, ParkingFloor> floors = new HashMap<>();
     Map<String, Ticket> tickets = new HashMap<>();
 
-    public ParkingLot(int id, List<ParkingFloor> floors) {
+    public ParkingLot(int id, List<ParkingFloor> _floors) {
         this.lotId = id;
-        this.floors = floors;
+        for (ParkingFloor floor : _floors) {
+            floors.put(floor.getFloorId(), floor);
+        }
         this.numFloors = floors.size();
     }
 
@@ -25,18 +27,19 @@ public class ParkingLot {
     }
 
     public List<ParkingFloor> getFloors() {
-        return Collections.unmodifiableList(floors);
+        return Collections.unmodifiableList(floors.values().stream().toList());
     }
 
-    public List<String> getTicketIds() {
-        return Collections.unmodifiableList(tickets.keySet().stream().toList());
+    public List<String> getOpenTicketIds() {
+        return Collections.unmodifiableList(tickets.values().stream().filter(Ticket::isOpen).map(Ticket::getTicketId).toList());
     }
 
     public void park(SpotType spotType, String entryGateId) {
-        for (ParkingFloor floor : floors) {
+        for (Map.Entry<Integer, ParkingFloor> entry : floors.entrySet()) {
+            ParkingFloor floor = entry.getValue();
             ParkingSpot spot = floor.markSpotOccupied(spotType);
             if (spot != null) {
-                Ticket ticket = new Ticket(lotId, floor.getFloorId(), spot.getSpotId(), entryGateId);
+                Ticket ticket = new Ticket(lotId, floor.getFloorId(), spot.getSpotId(), spot.getType(), entryGateId);
                 tickets.put(ticket.getTicketId(), ticket);
                 return;
             }
@@ -46,7 +49,7 @@ public class ParkingLot {
     public Ticket exit(String ticketId, String exitGateId) {
         Ticket ticket = tickets.get(ticketId);
         if (ticket != null) {
-            ParkingFloor floor = this.floors.stream().filter(f -> f.getFloorId() == ticket.floorId).findFirst().orElseThrow();
+            ParkingFloor floor = floors.get(ticket.floorId);
             floor.markSpotAvailable(ticket.spotId);
             ticket.close(exitGateId);
         }

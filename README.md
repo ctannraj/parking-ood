@@ -30,7 +30,9 @@ This project demonstrates core OOD principles through a realistic parking lot ma
   - Generated when a vehicle parks
   - Stores entry/exit information and timestamps
   - Tracks location (lot, floor, spot) and gate information
+  - Records the tick number when the ticket was created
   - Calculates parking duration upon vehicle exit
+  - Implements minimum parking duration enforcement to prevent same-tick exits
 
 #### Enums
 - **SpotType**: Defines available parking spot types
@@ -66,6 +68,8 @@ This project demonstrates core OOD principles through a realistic parking lot ma
 - **Random Exit Events**: Simulates vehicles leaving (15% exit chance per tick)
 - **Real-time Monitoring**: Displays lot status with available spots by type
 - **Time-based Simulation**: 5-second intervals between simulation ticks
+- **Duration Tracking**: Monitors and records parking duration for each vehicle
+- **Minimum Parking Duration**: Enforces that vehicles must be parked for at least 2 simulation ticks before they can exit, ensuring realistic duration measurements
 
 ## Project Structure
 
@@ -135,6 +139,10 @@ java -cp out com.mnc.parking.ParkingLotSimulation
 - Duration automatically calculated as the difference between exit and entry times
 - Provides parking duration for billing and analytics purposes
 - Immutable ticket records for audit trails
+- **Minimum Parking Duration**: Tickets must be parked for at least 2 simulation ticks before they can exit
+  - Prevents vehicles from being created and exiting in the same tick (which would result in 0 or near-0 second durations)
+  - Ensures accurate duration measurements that reflect the actual simulation elapsed time (minimum ~10 seconds with 5-second ticks)
+  - Prevents race conditions where entry and exit times are captured microseconds apart
 
 ## Dependencies
 

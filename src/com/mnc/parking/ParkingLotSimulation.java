@@ -42,11 +42,10 @@ public class ParkingLotSimulation {
         }
         parkingLot = new ParkingLot(1, floors);
         System.out.printf("     >>>>>>>> Lot %d <<<<<<<<\n", parkingLot.getLotId());
-        printLot(0);
+        printLot();
     }
 
-    public void printLot(int tick) {
-        System.out.printf(" > tick %d\n", tick);
+    public void printLot() {
         for (ParkingFloor floor : parkingLot.getFloors()) {
             System.out.printf(" Floor %d has %d/%d available spots : \n      ", floor.getFloorId(), floor.getAvailableSpots(), floor.getTotalSpots());
             for (Map.Entry<SpotType, Deque<String>> entry : floor.getAvailableSpotsByType().entrySet()) {
@@ -63,7 +62,7 @@ public class ParkingLotSimulation {
     }
 
     private String getRandomTicketId() {
-        List<String> tickets = parkingLot.getTicketIds();
+        List<String> tickets = parkingLot.getOpenTicketIds();
         int index = ThreadLocalRandom.current().nextInt(0,tickets.size());
         return tickets.get(index);
     }
@@ -76,21 +75,24 @@ public class ParkingLotSimulation {
 
         Random random = new Random();
         double parkChance = 0.99;
-        double exitChance = 0.15;
-
+        double exitChance = 0.25;
+        boolean parked = false;
         for (int tick=1; tick<=ticks; tick++) {
+            System.out.printf(" > tick %d\n", tick);
+            if (parked && random.nextDouble() < exitChance) {
+                String ticketId = getRandomTicketId();
+                Ticket ticket = parkingLot.exit(ticketId, "");
+                System.out.printf(" ---> Exit %s, duration %ds, freed spot %s\n", ticketId, ticket.getDuration().toSeconds(), ticket.getSpotType());
+            }
+
             if (random.nextDouble() < parkChance) {
                 SpotType spotType = getRandomSpotType();
                 System.out.printf(" ---> Park %s\n", spotType.toString());
                 parkingLot.park(spotType, "");
+                parked = true;
             }
 
-            if (random.nextDouble() < exitChance) {
-                String ticketId = getRandomTicketId();
-                Ticket ticket = parkingLot.exit(ticketId, "");
-                System.out.printf(" ---> Exit %s, duration %ds\n", ticketId, ticket.getDuration().toSeconds());
-            }
-            printLot(tick);
+            printLot();
 
             try {
                 Thread.sleep(5 * 1000);
