@@ -32,33 +32,25 @@ public class ParkingLot {
         return Collections.unmodifiableList(tickets.keySet().stream().toList());
     }
 
-    public Ticket park(SpotType spotType, String entryGateId) {
+    public void park(SpotType spotType, String entryGateId) {
         for (ParkingFloor floor : floors) {
             ParkingSpot spot = floor.markSpotOccupied(spotType);
             if (spot != null) {
-                spot.markOccupied();
                 Ticket ticket = new Ticket(lotId, floor.getFloorId(), spot.getSpotId(), entryGateId);
                 tickets.put(ticket.getTicketId(), ticket);
-                return ticket;
+                return;
             }
         }
-        return null;
     }
 
     public Ticket exit(String ticketId, String exitGateId) {
         Ticket ticket = tickets.get(ticketId);
         if (ticket != null) {
-            ticket.close(exitGateId);
             ParkingFloor floor = this.floors.stream().filter(f -> f.getFloorId() == ticket.floorId).findFirst().orElseThrow();
-            ParkingSpot spot = floor.getSpot(ticket.spotId);
-            spot.markAvailable();
-            floor.markSpotAvailable(spot.getSpotId());
+            floor.markSpotAvailable(ticket.spotId);
+            ticket.close(exitGateId);
         }
         return ticket;
-    }
-
-    public String toString() {
-        return String.format("%d %s", lotId, floors);
     }
 
 }

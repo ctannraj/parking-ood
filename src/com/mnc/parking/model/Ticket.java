@@ -16,7 +16,7 @@ public class Ticket {
     Duration duration;
 
     public Ticket(int lotId, int floorId, String spotId, String entryGateId) {
-        this.ticketId = UUID.randomUUID().toString();
+        this.ticketId = UUID.randomUUID().toString().split("-")[0];
         this.lotId = lotId;
         this.floorId = floorId;
         this.spotId = spotId;

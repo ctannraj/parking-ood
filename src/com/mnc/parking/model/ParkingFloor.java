@@ -51,6 +51,7 @@ public class ParkingFloor {
             String spotId = q.removeFirst();
             spot = parkingSpots.get(spotId);
             if (spot != null && spot.isAvailable() && spot.getType() == spotType) {
+                spot.markOccupied();
                 availableSpots--;
                 break;
             }
